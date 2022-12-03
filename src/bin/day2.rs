@@ -12,7 +12,7 @@ enum Shape {
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 enum Result {
     Win,
-    Loss,
+    Lose,
     Draw,
 }
 
@@ -30,13 +30,13 @@ fn compare_shapes(shape1: Shape, shape2: Shape) -> Result {
     } else if wins(shape1) == shape2 {
         Result::Win
     } else {
-        Result::Loss
+        Result::Lose
     }
 }
 
 lazy_static! {
     static ref POINTS_MAP: HashMap<Result, u32> = {
-        let points_map = HashMap::from([(Result::Win, 6), (Result::Draw, 3), (Result::Loss, 0)]);
+        let points_map = HashMap::from([(Result::Win, 6), (Result::Draw, 3), (Result::Lose, 0)]);
         points_map
     };
     static ref SHAPE_POINTS_MAP: HashMap<Shape, u32> = {
@@ -46,7 +46,12 @@ lazy_static! {
     };
 }
 
-fn calc_points(shape1: Shape, shape2: Shape) -> u32 {
+fn calc_points(shape1: Shape, result: Result) -> u32 {
+    let shape2 = match result {
+        Result::Lose => wins(shape1),
+        Result::Draw => shape1,
+        Result::Win => wins(wins(shape1)),
+    };
     let mut points = SHAPE_POINTS_MAP[&shape2];
     // println!("{}", points);
     let result = compare_shapes(shape2, shape1);
@@ -55,25 +60,37 @@ fn calc_points(shape1: Shape, shape2: Shape) -> u32 {
     points
 }
 
+#[derive(Debug)]
+struct Round {
+    shape: Shape,
+    result: Result,
+}
+
 fn main() {
-    let decipher = HashMap::from([
+    let decipher_col_1 = HashMap::from([
         ("A", Shape::Rock),
         ("B", Shape::Paper),
         ("C", Shape::Scissor),
-        ("X", Shape::Rock),
-        ("Y", Shape::Paper),
-        ("Z", Shape::Scissor),
     ]);
+    let decipher_col_2 =
+        HashMap::from([("X", Result::Lose), ("Y", Result::Draw), ("Z", Result::Win)]);
 
     let input = include_str!("../input/day2.txt");
-    let rounds: Vec<Vec<Shape>> = input
+    let rounds: Vec<Round> = input
         .split('\n')
-        .map(|x| x.split(' ').map(|x| decipher[x]).collect())
+        .map(|x| {
+            let row: Vec<&str> = x.split(' ').collect();
+            // println!({}, row[0])
+            Round {
+                shape: decipher_col_1[row[0]],
+                result: decipher_col_2[row[1]],
+            }
+        })
         .collect();
 
     let result: u32 = rounds
         .iter()
-        .map(|shapes| calc_points(shapes[0], shapes[1]))
+        .map(|round| calc_points(round.shape, round.result))
         .sum();
 
     println!("{:?}", result)

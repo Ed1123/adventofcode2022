@@ -9,8 +9,7 @@ def decode_item(item: str) -> int:
         return n - 96
 
 
-def main():
-    path = Path('src/input/day3_1')
+def part_1(path: Path) -> None:
     input_text = path.read_text()
     common_items = []
     for line in input_text.splitlines():
@@ -19,6 +18,10 @@ def main():
         common_items.append(set(first_half).intersection(set(second_half)).pop())
 
     print(sum(decode_item(item) for item in common_items))
+
+
+def main():
+    part_1(Path('src/input/day3_1'))
 
 
 if __name__ == '__main__':

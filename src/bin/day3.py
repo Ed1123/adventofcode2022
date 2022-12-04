@@ -20,8 +20,21 @@ def part_1(path: Path) -> None:
     print(sum(decode_item(item) for item in common_items))
 
 
+def part_2(path: Path) -> None:
+    lines = path.read_text().splitlines()
+    badges = []
+    for i in range(len(lines) // 3):
+        group = lines[i * 3 : (i + 1) * 3]
+        # print(group)
+        items = [set(line) for line in group]
+        badges.append(items[0].intersection(items[1]).intersection(items[2]).pop())
+
+    print(sum(decode_item(badge) for badge in badges))
+
+
 def main():
     part_1(Path('src/input/day3_1'))
+    part_2(Path('src/input/day3_2'))
 
 
 if __name__ == '__main__':
